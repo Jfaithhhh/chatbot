@@ -1,9 +1,9 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "rootDirectory": "/demo"
+    "builder": "DOCKER"
   },
   "deploy": {
-    "startCommand": "java -jar target/*.jar --server.port=${PORT}"
+    "runtime": "V2",
+    "restartPolicyType": "ON_FAILURE"
   }
 }
