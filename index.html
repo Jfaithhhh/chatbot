@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sparta AI Chatbot Test</title>
+    <style>
+        :root { --sparta-blue: #002147; --sparta-gold: #f1c40f; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; }
+        #chat-widget { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        #chat-button { width: 60px; height: 60px; background: var(--sparta-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid var(--sparta-gold); transition: transform 0.2s; }
+        #chat-window { display: none; width: 350px; height: 500px; background: white; border-radius: 15px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid var(--sparta-blue); }
+        .header { background: var(--sparta-blue); color: white; padding: 15px; font-weight: bold; border-bottom: 3px solid var(--sparta-gold); display: flex; justify-content: space-between; align-items: center; }
+        #messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; }
+        .bubble { margin-bottom: 12px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+        .user-bubble { align-self: flex-end; background: #e3f2fd; color: #0d47a1; border-bottom-right-radius: 2px; }
+        .ai-bubble { align-self: flex-start; background: white; color: #333; border: 1px solid #ddd; border-bottom-left-radius: 2px; border-left: 4px solid var(--sparta-gold); }
+        .input-area { padding: 15px; display: flex; border-top: 1px solid #eee; background: white; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        button#send-btn { background: var(--sparta-blue); color: white; border: none; padding: 10px 15px; margin-left: 5px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="chat-widget">
+    <div id="chat-button" onclick="toggleChat()">💬</div>
+    <div id="chat-window">
+        <div class="header">
+            <span>Sparta AI Assistant</span>
+            <span onclick="toggleChat()" style="cursor:pointer; font-size: 14px;">✖</span>
+        </div>
+        <div id="messages">
+            <div class="bubble ai-bubble">Welcome to Sparta Credit Management Services Inc. How can we help you Today?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type a message..." onkeypress="handleKey(event)">
+            <button id="send-btn" onclick="sendMsg()">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleChat() {
+        const win = document.getElementById('chat-window');
+        const btn = document.getElementById('chat-button');
+        const isHidden = win.style.display === 'none' || win.style.display === '';
+        win.style.display = isHidden ? 'flex' : 'none';
+        btn.style.display = isHidden ? 'none' : 'flex';
+    }
+
+    function handleKey(event) { if (event.key === 'Enter') sendMsg(); }
+async function sendMsg() {
+    const input = document.getElementById('userInput');
+    const box = document.getElementById('messages');
+    const text = input.value.trim();
+    if(!text) return;
+
+    box.innerHTML += `<div class="bubble user-bubble"><b>You:</b><br>${text}</div>`;
+    input.value = '';
+    box.scrollTop = box.scrollHeight;
+
+    const loadingId = "loading-" + Date.now();
+    box.innerHTML += `<div id="${loadingId}" class="bubble ai-bubble"><i>Sparta AI is typing...</i></div>`;
+    box.scrollTop = box.scrollHeight;
+
+    try {
+        const response = await fetch("http://localhost:9091/api/chat", { 
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text })
+        });
+        
+        const data = await response.json();
+        
+        const loadingEl = document.getElementById(loadingId);
+        if(loadingEl) loadingEl.remove();
+        
+        box.innerHTML += `<div class="bubble ai-bubble"><b>Sparta AI:</b><br>${data.reply}</div>`;
+    } catch (e) {
+        const loadingEl = document.getElementById(loadingId);
+        if(loadingEl) loadingEl.remove();
+        box.innerHTML += `<div style="color:red; font-size:11px; text-align:center; margin: 10px 0;"> ⚠️ Connection Error: Is the Backend running on Port 9091?</div>`;
+    }
+    box.scrollTop = box.scrollHeight;
+    
+
+    }
+</script>
+</body>
+</html>
