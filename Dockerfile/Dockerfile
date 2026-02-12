@@ -7,4 +7,5 @@ FROM eclipse-temurin-21-jre
 WORKDIR /app
 COPY --from=build /app/demo/target/*.jar app.jar
 
-ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=${PORT}"]
+# Tanggalin natin ang EXPOSE 9091 at palitan ang ENTRYPOINT
+ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=${PORT:8080}"]
